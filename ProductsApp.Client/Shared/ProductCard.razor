@@ -1,0 +1,37 @@
+﻿
+<div class="d-flex justify-content-center container mt-5">
+    <div class="card p-3 bg-white">
+        <i class="fa fa-apple"></i>
+        <div class="about-product text-center mt-2">
+            <img src="@Product.PhotoUrl" width="300">
+            <div>
+                <h4>@Product.Name</h4>
+
+            </div>
+        </div>
+        <div class="stats mt-2">
+            <div class="d-flex justify-content-between p-price"><span>Price</span><span>$@Product.Price</span></div>
+            <div class="d-flex justify-content-between p-price"><span>Quantity</span><span>
+                <input type="number" min="1" max="999" value="@quantity" @oninput=OnQuantityChanged/>
+            </span></div>
+        </div>
+        <div class="d-flex justify-content-between total font-weight-bold mt-4"><span>Total</span><span>$@value</span></div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Product Product { get; set; }
+    [Parameter]
+    public Action<Guid,int> OnCalculation{ get; set; }
+    private int quantity = 1;
+    private double value = 0;
+
+    private void OnQuantityChanged(ChangeEventArgs e)
+    {
+        int _quantity = int.Parse(e.Value.ToString());
+        this.quantity = _quantity;
+        value = _quantity * Product.Price;
+        OnCalculation?.Invoke(Product.Id, quantity);
+    }
+}

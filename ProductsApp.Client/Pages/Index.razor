@@ -1,0 +1,47 @@
+﻿@page "/"
+@inject HttpClient Http;
+<PageTitle>Index</PageTitle>
+
+<div class="row">
+    <div class="col-12">
+        <h1>Total:@total</h1>
+    </div>
+    @foreach (Product product in productsList)
+    {
+        <div class="col-3">
+            <ProductCard Product="product" OnCalculation="CalculateTotals" />
+        </div>
+    }
+</div>
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+@code {
+    private List<Product> productsList = new();
+    private List<Order> ordersList = new();
+    private double total = 0;
+    protected override async Task OnInitializedAsync()
+    {
+        productsList = await Http.GetFromJsonAsync<List<Product>>("api/Product");
+        ordersList = productsList.Select(it => new Order()
+        {
+             ProductId = it.Id,
+             ProductName = it.Name,
+             Price = it.Price,
+             Quantity = 1,
+             Value = it.Price
+        }).ToList();
+        total = ordersList.Sum(it => it.Value);
+    }
+
+    private void CalculateTotals(Guid productId,int quantity)
+    {
+        var order = ordersList.First(it => it.ProductId == productId);
+        order.Quantity = quantity;
+        order.Value = order.Price * order.Quantity;
+        int index = ordersList.IndexOf(order);
+        ordersList[index] = order;
+
+        total = ordersList.Sum(it => it.Value);
+        StateHasChanged();
+    }
+}
